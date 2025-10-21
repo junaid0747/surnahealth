@@ -5,37 +5,39 @@ namespace App\Http\Controllers\Doctor;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\User;
+use App\Services\DoseSpotService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class PatientsController extends Controller
 {
     public function index(Request $request)
     {
-        $doctorId = auth()->id(); 
+        $doctorId = auth()->id();
         $appointmentType = $request->input('appointment_type', []);
 
         $query = User::query()
-        ->whereHas('appointments', function ($q) use ($doctorId, $appointmentType) {
-            $q->where('doctor_id', $doctorId);
-    
-            if (!empty($appointmentType) && !in_array('All Type', $appointmentType)) {
-                $q->whereHas('user.patientAppointmentPreferences', function ($preferencesQuery) use ($appointmentType) {
-                    $preferencesQuery->where(function ($subQuery) use ($appointmentType) {
-                        foreach ($appointmentType as $type) {
-                            $typeColumn = str_replace(' ', '_', strtolower($type));
-                            $subQuery->orWhere($typeColumn, 1);
-                        }
+            ->whereHas('appointments', function ($q) use ($doctorId, $appointmentType) {
+                $q->where('doctor_id', $doctorId);
+
+                if (!empty($appointmentType) && !in_array('All Type', $appointmentType)) {
+                    $q->whereHas('user.patientAppointmentPreferences', function ($preferencesQuery) use ($appointmentType) {
+                        $preferencesQuery->where(function ($subQuery) use ($appointmentType) {
+                            foreach ($appointmentType as $type) {
+                                $typeColumn = str_replace(' ', '_', strtolower($type));
+                                $subQuery->orWhere($typeColumn, 1);
+                            }
+                        });
                     });
-                });
-            }
-        })
-        ->with([
-            'appointments' => function ($q) use ($doctorId) {
-                $q->where('doctor_id', $doctorId); 
-            },
-            'patientAppointmentPreferences' 
-        ]);
-    
+                }
+            })
+            ->with([
+                'appointments' => function ($q) use ($doctorId) {
+                    $q->where('doctor_id', $doctorId);
+                },
+                'patientAppointmentPreferences'
+            ]);
+
 
         // Search block
         if ($request->filled('search')) {
@@ -53,14 +55,30 @@ class PatientsController extends Controller
 
         $appointments = $query->get();
         $totalPatients = $appointments->count();
-        
-        return view('doctor.my-patients',get_defined_vars());
+
+        return view('doctor.my-patients', get_defined_vars());
     }
 
 
-    public function patientProfile($id = null)
+    public function patientProfile($id = null, DoseSpotService $doseSpotService)
     {
         $patient =  User::with('appointments.doctor', 'appointments.slot', 'medicalDetails', 'prescriptions.doctor')->find($id);
+
+
+        $patientId = $patient->dose_spot_patient_id;
+        $startDate = now()->subMonth()->toIso8601String();
+        $endDate = now()->toIso8601String();
+
+        if ($patientId) {
+            $selfReported = $doseSpotService->getSelfReportedMedications($patientId, $startDate, $endDate);
+
+            if ($selfReported) {
+                $items = collect($selfReported['Items'] ?? []);
+                $grouped = $items->groupBy(function ($item) {
+                    return Carbon::parse($item['DatePrescribed'])->format('Y-m-d');
+                });
+            }
+        }
 
         return view('doctor.patient-profile', get_defined_vars());
     }

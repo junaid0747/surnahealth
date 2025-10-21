@@ -45,77 +45,14 @@
 
                                      @endif
                                 </p>
-                                
-                                <div class="rating">
-                                    <i class="fas fa-star filled"></i>
-                                    <i class="fas fa-star filled"></i>
-                                    <i class="fas fa-star filled"></i>
-                                    <i class="fas fa-star filled"></i>
-                                    <i class="fas fa-star"></i>
-                                    <span class="d-inline-block average-rating">(0)</span>
-                                </div>
-                                <div class="clinic-details">
-                                    <p class="doc-location"><i class="fas fa-map-marker-alt"></i>
-                                        {{ $doctor->city ?? '--' }},{{ $doctor->state ?? '--' }} - <a
-                                            href="javascript:void(0);">{{ __('messages.get_directions')}}
-                                        </a></p>
-                                    <ul class="clinic-gallery">
-                                        @if (!empty($doctor->doctorClinic) && $doctor->doctorClinic->isNotEmpty())
-                                        @foreach ($doctor->doctorClinic->first()->gallery as $gallery)
-                                        <li>
-                                            <a href="{{ $gallery->image ?? URL::asset('/assets/img/features/feature-01.jpg') }}"
-                                                data-fancybox="gallery">
-                                                <img src="{{ $gallery->image ?? URL::asset('/assets/img/features/feature-01.jpg') }}"
-                                                    alt="Feature">
-                                            </a>
-                                        </li>
-                                    @endforeach
-                                            @else
-                                            {{ __('messages.no_clinic')}}
-
-                                            @endif
-                                     
-                                    </ul>
-                                </div>
-                                <div class="clinic-services">
-                                    <span>clinic service 1</span>
-                                    <span>clinic service 2</span>
-                                </div>
+                             
                             </div>
                         </div>
                         <div class="doc-info-right">
-                            <div class="clini-infos">
-                                <ul>
-                                    <li><i class="far fa-thumbs-up"></i> 0%</li>
-                                    <li><i class="far fa-comment"></i> 0 {{ __('messages.feedback')}}
-                                    </li>
-                                    <li><i class="fas fa-map-marker-alt"></i> {{ $doctor->state ?? '--' }},
-                                        {{ $doctor->country ?? '--' }}</li>
-                                    <li>
-                                        <i class="far fa-money-bill-alt"></i>
-                                        @if (!empty($doctor->availableTimings) && $doctor->availableTimings->isNotEmpty())
-                                            ${{ $doctor->availableTimings->min('appointment_fees') ?? 'N/A' }} - 
-                                            ${{ $doctor->availableTimings->max('appointment_fees') ?? 'N/A' }}
-                                        @else
-                                            N/A - N/A
-                                        @endif
-                                        <i class="fas fa-info-circle" data-bs-toggle="tooltip" title="Lorem Ipsum"></i>
-                                    </li>
-
-                                </ul>
-                            </div>
+                           
                             <div class="doctor-action">
-                                <a href="javascript:void(0)" class="btn btn-white fav-btn">
-                                    <i class="far fa-bookmark"></i>
-                                </a>
                                 <a href="{{ url('chat') }}" class="btn btn-white msg-btn">
                                     <i class="far fa-comment-alt"></i>
-                                </a>
-                                <a href="{{ url('voice-call') }}" class="btn btn-white call-btn">
-                                    <i class="fas fa-phone"></i>
-                                </a>
-                                <a href="{{ url('video-call') }}" class="btn btn-white call-btn">
-                                    <i class="fas fa-video"></i>
                                 </a>
                             </div>
                             <div class="clinic-booking">
@@ -137,12 +74,12 @@
                             <li class="nav-item">
                                 <a class="nav-link active" href="#doc_overview" data-bs-toggle="tab">{{ __('messages.overview')}}</a>
                             </li>
-                            <li class="nav-item">
+                            {{-- <li class="nav-item">
                                 <a class="nav-link" href="#doc_locations" data-bs-toggle="tab">{{ __('messages.locations')}}</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="#doc_reviews" data-bs-toggle="tab">{{ __('messages.reviews')}}</a>
-                            </li>
+                            </li> --}}
                             <li class="nav-item">
                                 <a class="nav-link" href="#doc_business_hours" data-bs-toggle="tab">{{ __('messages.business_hours')}}</a>
                             </li>
@@ -242,7 +179,7 @@
                                     <!-- /Experience Details -->
 
                                     <!-- Awards Details -->
-                                    <div class="widget awards-widget">
+                                    {{-- <div class="widget awards-widget">
                                         <h4 class="widget-title">{{ __('messages.awards')}}</h4>
                                         <div class="experience-box">
                                             <ul class="experience-list">
@@ -270,11 +207,11 @@
                                               
                                             </ul>
                                         </div>
-                                    </div>
+                                    </div> --}}
                                     <!-- /Awards Details -->
 
                                     <!-- Services List -->
-                                    <div class="service-list">
+                                    {{-- <div class="service-list">
                                         <h4>{{ __('messages.services')}}</h4>
                                         <ul class="clearfix">
                                             <li>Tooth cleaning </li>
@@ -284,11 +221,11 @@
                                             <li>Fissure Sealants</li>
                                             <li>Surgical Extractions</li>
                                         </ul>
-                                    </div>
+                                    </div> --}}
                                     <!-- /Services List -->
 
                                     <!-- Specializations List -->
-                                    <div class="service-list">
+                                    {{-- <div class="service-list">
                                         <h4>{{ __('messages.specializations')}}</h4>
                                         <ul class="clearfix">
                                             @if (!empty($doctor->doctorSpecialization) && $doctor->doctorSpecialization->isNotEmpty())
@@ -300,7 +237,7 @@
                                         @endif
                                          
                                         </ul>
-                                    </div>
+                                    </div> --}}
                                     <!-- /Specializations List -->
 
                                 </div>

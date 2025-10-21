@@ -2,6 +2,7 @@
 
 use App\Events\MyEvent;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Api\DoseSpotController;
 use App\Http\Controllers\Auth\DoctorRegistrationController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Doctor\DoctorExperienceController;
 use App\Http\Controllers\Doctor\DoctorHelpAndSupportController;
 use App\Http\Controllers\Doctor\DoctorInsurancesController;
 use App\Http\Controllers\Doctor\DoctorPresciptionController;
+use App\Http\Controllers\Doctor\DoctorSubscription;
 use App\Http\Controllers\Doctor\PatientsController;
 use App\Http\Controllers\Frontend\FrontendController;
 use App\Http\Controllers\GoogleMeetController;
@@ -36,13 +38,33 @@ use App\Http\Controllers\Patient\PatientPresciptionController;
 use App\Http\Controllers\Patient\PatientProfileSettingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SubscriptionController;
 use App\Services\GoogleClientService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckRegistrationStep;
+use App\Http\Middleware\CheckSubscription;
 use App\Http\Middleware\LocalizationMiddleware;
 use Illuminate\Support\Facades\Mail;
 use Pusher\Pusher;
+
+Route::prefix('dosespot')->group(function () {
+    Route::get('/prescriptions', [DoseSpotController::class, 'getPrescriptions']);
+    Route::post('/prescriptions', [DoseSpotController::class, 'createPrescription']);
+});
+
+Route::get('/patient-register-step1', [RegisteredUserController::class, 'step1'])->name('patient-register-step1');
+Route::get('/patient-register-step2', [RegisteredUserController::class, 'step2'])->name('patient-register-step2');
+Route::get('/patient-register-step3', [RegisteredUserController::class, 'step3'])->name('patient-register-step3');
+Route::get('/patient-register-step4', [RegisteredUserController::class, 'step4'])->name('patient-register-step4');
+
+
+
+
+Route::get('/doctor-register-step1', [DoctorRegistrationController::class, 'step1'])->name('doctor-register-step1');
+Route::get('/doctor-register-step2', [DoctorRegistrationController::class, 'step2'])->name('doctor-register-step2');
+Route::get('/doctor-register-step3', [DoctorRegistrationController::class, 'step3'])->name('doctor-register-step3');
+Route::get('/doctor-register-step4', [DoctorRegistrationController::class, 'step4'])->name('doctor-register-step4');
 
 Route::get('/', function () {
     //  dd(\Illuminate\Support\Facades\Auth::user()->getRoleNames()->first());
@@ -51,24 +73,41 @@ Route::get('/', function () {
     //    \Illuminate\Support\Facades\Session::flush();
 
     return view('index');
-})->name('home-page')->middleware([ LocalizationMiddleware::class]);
+})->name('home-page')->middleware([LocalizationMiddleware::class]);
 
-// Front end pages
 Route::middleware([LocalizationMiddleware::class])->prefix('frontend')->group(function () {
     Route::get('/doctor-profile/{id?}', [FrontendController::class, 'doctorProfile'])->name('frontend.doctor-profile');
     Route::get('/booking/{doctor_id?}', [FrontendController::class, 'showBookingForm'])->name('frontend.booking');
     Route::get('/search', [FrontendController::class, 'search'])->name('frontend.search');
     Route::get('/blog-details', [FrontendController::class, 'blogDetails'])->name('frontend.blog-details');
+
+    Route::get('/breast-cancer', [FrontendController::class, 'breastCancer'])->name('frontend.breast-cancer');
+    Route::get('/prostate-cancer', [FrontendController::class, 'prostateCancer'])->name('frontend.prostate-cancer');
+    Route::get('/cardiac-issues', [FrontendController::class, 'cardiacIssues'])->name('frontend.cardiac-issues');
+    Route::post('/assesment-stripe-checkout', [FrontendController::class, 'createCheckoutSession']);
 });
-
-
 
 Route::middleware('auth')->group(function () {
-    //    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    //    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
 
+    Route::get('/chat/{doctor_id?}', [MessageController::class, 'index'])->name('chat');
+    Route::post('/messages/send', [MessageController::class, 'send'])->name('messages.send');
+
+    Route::get('/patient-payment-method-step', [SubscriptionController::class, 'patientPaymentMethodStep'])->name('patient-payment-method-step');
+    Route::get('/patient-subscription-plans-step', [SubscriptionController::class, 'patientSubscriptionPlansStep'])->name('patient-subscription-plans-step');
+    Route::post('/patient-subscription-checkout-session', [SubscriptionController::class, 'createSubscriptionCheckoutSession']);
+    Route::get('/patient-subscription-success', [SubscriptionController::class, 'subscriptionSuccessModal'])->name('patient-subscription-success');
+
+    Route::get('/doctor-payment-method-step', [DoctorSubscription::class, 'doctorPaymentMethodStep'])->name('doctor-payment-method-step');
+    Route::get('/doctor-subscription-plans-step', [DoctorSubscription::class, 'doctorSubscriptionPlansStep'])->name('doctor-subscription-plans-step');
+    Route::post('/doctor-subscription-checkout-session', [DoctorSubscription::class, 'createSubscriptionCheckoutSession']);
+    Route::get('/doctor-subscription-success', [DoctorSubscription::class, 'subscriptionSuccessModal'])->name('doctor-subscription-success');
+
+    Route::get('/subscription/cancel', function () {
+        return 'Subscription canceled.';
+    })->name('subscription.cancel');
+
+});
 
 
 
@@ -107,6 +146,9 @@ Route::middleware(['auth', 'role:doctor', CheckRegistrationStep::class])->prefix
 
     Route::get('/add-prescription/{id?}', [DoctorPresciptionController::class, 'index'])->name('add-prescription');
     Route::get('/store-prescription', [DoctorPresciptionController::class, 'store'])->name('store-prescription');
+    Route::get('/search-medications', [DoctorPresciptionController::class, 'searchMedications'])
+    ->name('search-medications');
+
 
     Route::get('/doctor-help-and-support', [DoctorHelpAndSupportController::class, 'index'])->name('doctor-help-and-support');
     Route::post('/doctor-create-ticket', [DoctorHelpAndSupportController::class, 'createTicket'])->name('doctor-create-ticket');
@@ -119,7 +161,7 @@ Route::middleware(['auth', 'role:doctor', CheckRegistrationStep::class])->prefix
  * Patient dashboard authenticated routes
  */
 
-Route::middleware(['auth', 'role:patient', CheckRegistrationStep::class])->prefix('patient')->group(function () {
+Route::middleware(['auth', 'role:patient', CheckRegistrationStep::class, CheckSubscription::class,LocalizationMiddleware::class])->prefix('patient')->group(function () {
 
     Route::get('/change-password', [NewPasswordController::class, 'patientChangePassword'])->name('patient.change-password');
     Route::post('/update-password', [NewPasswordController::class, 'UpdatePassword'])->name('patient.update-password');
@@ -200,9 +242,10 @@ Route::middleware(['auth', 'role:patient', CheckRegistrationStep::class])->prefi
     })->name('checkout');
 
     Route::post('/create-checkout-session', [BookingController::class, 'createCheckoutSession']);
-Route::post('/booking-success', [BookingController::class, 'bookingSuccess']);
-Route::get('/booking-success', [BookingController::class, 'bookingSuccessModal'])->name('booking-success');
+    Route::post('/booking-success', [BookingController::class, 'bookingSuccess']);
+    Route::get('/booking-success', [BookingController::class, 'bookingSuccessModal'])->name('booking-success');
 
+    Route::post('/patient-subscribe', [BookingController::class, 'subscribe'])->name('patient-subscribe');
 });
 
 
@@ -224,9 +267,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/patient-list', function () {
         return view('admin.patient-list');
     })->name('patient-list');
-    Route::get('/reviews', function () {
+    Route::get('/admin-reviews', function () {
         return view('admin.reviews');
-    })->name('reviews');
+    })->name('admin-reviews');
     Route::get('/transactions-list', function () {
         return view('admin.transactions-list');
     })->name('transactions-list');
@@ -239,30 +282,30 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/profile', function () {
         return view('admin.profile');
     })->name('profile');
-    Route::get('/login', function () {
+    Route::get('/admin-login', function () {
         return view('admin.login');
-    })->name('login');
-    Route::get('/register', function () {
+    })->name('admin-login');
+    Route::get('/admin-register', function () {
         return view('admin.register');
-    })->name('register');
+    })->name('admin-register');
     Route::get('/forgot-password', function () {
         return view('admin.forgot-password');
     })->name('forgot-password');
     Route::get('/lock-screen', function () {
         return view('admin.lock-screen');
     })->name('lock-screen');
-    Route::get('/error-404', function () {
+    Route::get('/admin-error-404', function () {
         return view('admin.error-404');
-    })->name('error-404');
-    Route::get('/error-500', function () {
+    })->name('admin-error-404');
+    Route::get('/admin-error-500', function () {
         return view('admin.error-500');
-    })->name('error-500');
+    })->name('admin-error-500');
     Route::get('/blank-page', function () {
         return view('admin.blank-page');
     })->name('blank-page');
-    Route::get('/components', function () {
+    Route::get('/admin-components', function () {
         return view('admin.components');
-    })->name('components');
+    })->name('admin-components');
     Route::get('/form-basic-inputs', function () {
         return view('admin.form-basic-inputs');
     })->name('form-basic');
@@ -290,9 +333,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/invoice', function () {
         return view('admin.invoice');
     })->name('invoice');
-    Route::get('/calendar', function () {
+    Route::get('/admin-calendar', function () {
         return view('admin.calendar');
-    })->name('calendar');
+    })->name('admin-calendar');
     Route::get('/blog', function () {
         return view('admin.blog');
     })->name('blog');
@@ -300,9 +343,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/add-blog', function () {
         return view('admin.add-blog');
     })->name('add-blog');
-    Route::get('/edit-blog', function () {
+    Route::get('/admin-edit-blog', function () {
         return view('admin.edit-blog');
-    })->name('edit-blog');
+    })->name('admin-edit-blog');
     Route::get('/product-list', function () {
         return view('admin.product-list');
     })->name('product-list');
@@ -343,7 +386,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
 
 Route::get('/index', function () {
     return view('index');
-})->name('index')->middleware([ LocalizationMiddleware::class]);
+})->name('index')->middleware([LocalizationMiddleware::class]);
 Route::get('/index-2', function () {
     return view('index-2');
 })->name('index-2');
@@ -405,9 +448,9 @@ Route::post('/available-timings-update', [AvailableTimmingController::class, 'up
 
 // Route::resource('/available-timings', AvailableTimmingController::class);
 
-Route::get('/blank-page', function () {
-    return view('blank-page');
-})->name('blank-page');
+// Route::get('/blank-page', function () {
+//     return view('blank-page');
+// })->name('blank-page');
 // Route::get('/blog-details', function () {
 //     return view('blog-details');
 // })->name('blog-details');
@@ -424,12 +467,8 @@ Route::get('/booking-success-one', function () {
     return view('booking-success-one');
 })->name('booking-success-one');
 
-// Route::get('/booking/{doctor_id}', function () {
-//     return view('booking');
-// })->name('booking');
 Route::get('/booking/{doctor_id?}', [BookingController::class, 'showBookingForm'])->name('booking');
 Route::resource('/book-appointment', BookingController::class);
-
 
 Route::get('/calendar', function () {
     return view('calendar');
@@ -463,10 +502,7 @@ Route::get('/doctor-blog', function () {
 /********************ADMIN ROUTES END******************************/
 
 
-Route::get('/patient-register-step1', [RegisteredUserController::class, 'step1'])->name('patient-register-step1');
-Route::get('/patient-register-step2', [RegisteredUserController::class, 'step2'])->name('patient-register-step2');
-Route::get('/patient-register-step3', [RegisteredUserController::class, 'step3'])->name('patient-register-step3');
-Route::get('/patient-register-step4', [RegisteredUserController::class, 'step4'])->name('patient-register-step4');
+
 
 Route::get('/patient-signup', function () {
     return view('patient.patient-signup');
@@ -479,14 +515,13 @@ Route::get('/doctor-profile', function () {
     return view('doctor-profile');
 })->name('doctor-profile');
 
-Route::get('/doctor-register-step1', [DoctorRegistrationController::class, 'step1'])->name('doctor-register-step1');
-Route::get('/doctor-register-step2', [DoctorRegistrationController::class, 'step2'])->name('doctor-register-step2');
-Route::get('/doctor-register-step3', [DoctorRegistrationController::class, 'step3'])->name('doctor-register-step3');
-Route::get('/doctor-register-step4', [DoctorRegistrationController::class, 'step4'])->name('doctor-register-step4');
 
-Route::get('/doctor-register', function () {
-    return view('doctor-register');
-})->name('doctor-register');
+
+// Route::get('/doctor-register', function () {
+//     return view('doctor-register');
+// })->name('doctor-register');
+ Route::get('doctor-register', [DoctorRegistrationController::class, 'doctorRegister'])
+        ->name('doctor-register');
 Route::get('/doctor-search-grid', function () {
     return view('doctor-search-grid');
 })->name('doctor-search-grid');
@@ -726,38 +761,15 @@ Route::get('/doctor-appointment-details', function () {
     return view('doctor-appointment-details');
 })->name('doctor-appointment-details');
 
-// Route::get('/doctor-awards-settings', [DoctorAwardController::class, 'index'])->name('doctor-awards-settings');
-// Route::get('/doctor-awards-settings-delete/{id}', [DoctorAwardController::class, 'destroy'])->name('doctor-awards-settings-delete');
-// Route::resource('/doctor-awards-setting', DoctorAwardController::class);
-
-
-// Route::get('/doctor-clinics-settings', [DoctorClinicsController::class, 'index'])->name('doctor-clinics-settings');
-// Route::get('/doctor-clinics-settings-delete/{id}', [DoctorClinicsController::class, 'destroy'])->name('doctor-clinics-settings-delete');
-// Route::get('/doctor-clinics-setting-gallery-remove/{id}', [DoctorClinicsController::class, 'removeGallery'])->name('doctor-clinics-setting-gallery-remove');
-// Route::resource('/doctor-clinics-setting', DoctorClinicsController::class);
-
-// Route::get('/doctor-insurance-settings', [DoctorInsurancesController::class, 'index'])->name('doctor-insurance-settings');
-// Route::get('/doctor-insurance-settings-delete/{id}', [DoctorInsurancesController::class, 'destroy'])->name('doctor-insurance-settings-delete');
-// Route::resource('/doctor-insurance-setting', DoctorInsurancesController::class);
-
 Route::get('/doctor-cancelled-appointment', function () {
     return view('doctor-cancelled-appointment');
 })->name('doctor-cancelled-appointment');
-
-
-
-
-
 Route::get('/patient-appointment-details', function () {
     return view('patient-appointment-details');
 })->name('patient-appointment-details');
-// Route::get('/patient-cancelled-appointment', function () {
-//     return view('patient.patient-cancelled-appointment');
-// })->name('patient-cancelled-appointment');
 Route::get('/patient-completed-appointment', function () {
     return view('patient.patient-completed-appointment');
 })->name('patient-completed-appointment');
-
 Route::get('/patient-upcoming-appointment', function () {
     return view('patient.patient-upcoming-appointment');
 })->name('patient-upcoming-appointment');
@@ -767,11 +779,7 @@ Route::get('/doctor-cancelled-appointment-2', function () {
 Route::get('/paitent-details', function () {
     return view('paitent-details');
 })->name('paitent-details');
-// Route::get('/doctor-profile-2', function () {
-//     return view('doctor-profile-2');
-// })->name('doctor-profile-2');
 Route::get('/doctor-profile-2/{id?}', [DoctorProfileController::class, 'show'])->name('doctor-profile-2');
-
 
 Route::get('/google-auth', function () {
 
@@ -883,45 +891,6 @@ Route::post('/google-meet/create', [GoogleMeetController::class, 'createMeeting'
 //     })->name('register');
 
 // });
-Route::get('/preview-email', function () {
-    $emailData = [
-        'subject' => 'Test Email',
-        'greeting' => 'Hello User',
-        'body' => 'This is a test email to preview the design.',
-        'actionText' => 'Visit Us',
-        'actionURL' => url('/'),
-        'thanks' => 'Thank you!',
-    ];
-    // dd($emailData);
-    Mail::to('rehmanjunaid215@gmail.com')->send(new App\Mail\DynamicEmail($emailData));
-
-    return 'Test email sent successfully!';
-});
-
-Route::get('/test-email', function () {
-    try {
-        Mail::raw('This is a test email.', function ($message) {
-            $message->to('recipient@example.com')
-                ->subject('Simple Email Test');
-        });
-        return 'Simple email sent!';
-    } catch (\Exception $e) {
-        return 'Error: ' . $e->getMessage();
-    }
-});
-
-
-Route::get('/env-check', function () {
-    return [
-        'MAIL_MAILER' => env('MAIL_MAILER'),
-        'MAIL_HOST' => env('MAIL_HOST'),
-        'MAIL_PORT' => env('MAIL_PORT'),
-        'MAIL_USERNAME' => env('MAIL_USERNAME'),
-        'MAIL_PASSWORD' => env('MAIL_PASSWORD'),
-        'MAIL_ENCRYPTION' => env('MAIL_ENCRYPTION'),
-    ];
-});
-
 
 Route::get('/chat-testing', function () {
     return view('chat.chat');
@@ -941,12 +910,6 @@ Route::get('/send-test-event', function () {
     return 'Test event sent!';
 });
 
-
-
-Route::middleware('auth')->group(function () {
-    Route::get('/chat/{doctor_id?}', [MessageController::class, 'index'])->name('chat');
-    Route::post('/messages/send', [MessageController::class, 'send'])->name('messages.send');
-});
 
 
 require __DIR__ . '/auth.php';

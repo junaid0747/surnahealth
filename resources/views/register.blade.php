@@ -25,60 +25,60 @@
                                         <input type="text" class="form-control floating" name="name" id="name">
                                         <label class="focus-label">Name</label>
                                         @error('name')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
+                                            <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                     <div class="mb-3 form-focus">
                                         <input type="text" class="form-control floating" name="email" id="number">
                                         <label class="focus-label">Email</label>
                                         @error('email')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
+                                            <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
-                                    <div class="mb-3 form-focus">
+                                    <div class="mb-5 form-focus">
                                         <input type="text" class="form-control floating" name="phone" id="number">
                                         <label class="focus-label">Phone</label>
+                                        <span class="text-info">Note : Add USA number without country code</span>
+
                                         @error('phone')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
+                                            <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
+
                                     <div class="mb-3 form-focus">
                                         <label class="focus-label">Create Password</label>
-                                        <div class="pass-group">
+                                        <div class="pass-group position-relative">
                                             <input class="form-control pass-input floating" type="password" name="password"
                                                 id="password">
+                                            <span
+                                                class="custom-toggle-password position-absolute end-0 top-50 translate-middle-y me-3 cursor-pointer"
+                                                onclick="togglePasswordVisibility()">
+                                                <i class="fa fa-eye"></i>
+                                            </span>
                                         </div>
                                         @error('password')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
+                                            <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
-                                    <input type="hidden" name="role" value="patient">
+
                                     <div class="mb-3 form-focus">
                                         <label class="focus-label">Confirm Password</label>
-                                        <div class="pass-group">
-                                            <input class="form-control pass-input floating" type="password" name="password_confirmation"
-                                                   id="password">
-
+                                        <div class="pass-group position-relative">
+                                            <input class="form-control pass-input floating" type="password"
+                                                name="password_confirmation" id="password_confirmation">
+                                            <span
+                                                class="custom-toggle-confirm-password position-absolute end-0 top-50 translate-middle-y me-3 cursor-pointer"
+                                                onclick="toggleConfirmPassword()">
+                                                <i class="fa fa-eye"></i>
+                                            </span>
                                         </div>
                                     </div>
+
                                     <div class="text-end">
                                         <a class="forgot-link" href="{{ url('login') }}">Already have an account?</a>
                                     </div>
                                     <button class="btn btn-primary w-100 btn-lg login-btn" type="submit">Signup</button>
-                                    <div class="login-or">
-                                        <span class="or-line"></span>
-                                        <span class="span-or">or</span>
-                                    </div>
-                                    <div class="row social-login">
-                                        <div class="col-6">
-                                            <a href="javascript:;" class="btn btn-facebook w-100"><i
-                                                    class="fab fa-facebook-f me-1"></i> Login</a>
-                                        </div>
-                                        <div class="col-6">
-                                            <a href="javascript:;" class="btn btn-google w-100"><i
-                                                    class="fab fa-google me-1"></i> Login</a>
-                                        </div>
-                                    </div>
+                                    
                                 </form>
                                 <!-- /Register Form -->
 

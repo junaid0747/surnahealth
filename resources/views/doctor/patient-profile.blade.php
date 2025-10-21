@@ -54,32 +54,30 @@
                         <!-- Appoitment Tabs -->
                         <div class="appointment-tabs user-tab">
                             <ul class="nav">
+                               
                                 <li class="nav-item">
-                                    <a class="nav-link active" href="#pat_appointments"
-                                        data-bs-toggle="tab">Appointments</a>
+                                    <a class="nav-link active" href="#prescription" data-bs-toggle="tab">Prescription</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="#prescription" data-bs-toggle="tab">Prescription</a>
-                                </li>
-                                {{-- <li class="nav-item">
-                                    <a class="nav-link" href="#medical" data-bs-toggle="tab">Medical Records</a>
-                                </li> --}}
-                                {{-- <li class="nav-item">
-                                    <a class="nav-link" href="#billing" data-bs-toggle="tab">Billing</a>
-                                </li> --}}
+                              
                             </ul>
                         </div>
                         <!-- /Appoitment Tabs -->
 
                         <div class="tab-content pt-0">
 
-                            <!-- Appointment Tab -->
-                            <div id="pat_appointments" class="tab-pane fade show active">
+                       
 
+                            <!-- Prescription Tab -->
+                            <div class="tab-pane fade show active" id="prescription">
                                 <div class="search-header">
                                     <div class="search-field">
                                         <input type="text" class="form-control" placeholder="Search">
                                         <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                    </div>
+                                    <div>
+                                        <a href="{{ route('add-prescription', $patient->id) }}"
+                                            class="btn btn-primary prime-btn" data-bs-target="#add_prescription">Add New
+                                            Prescription</a>
                                     </div>
                                 </div>
 
@@ -88,63 +86,47 @@
                                         <table class="table table-center mb-0">
                                             <thead>
                                                 <tr>
-                                                    <th>ID</th>
-                                                    <th>Doctor</th>
-                                                    <th>Appt Date</th>
-                                                    <th>Booking Date</th>
-                                                    <th>Amount</th>
-                                                    <th>Status</th>
-                                                    <th>Action</th>
+                                                    <th>{{ __('messages.patient_id') }}</th>
+                                                    <th>{{ __('messages.patient_name') }}</th>
+                                                    {{-- <th>Type</th> --}}
+                                                     <th>{{ __('messages.created_date') }}</th>
+                                                     <th>{{ __('messages.prescription_detail') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach ($patient->appointments as $appointment)
-                                                    <tr>
-                                                        <td><a class="text-blue-600"
-                                                                href="{{ url('patient-upcoming-appointment') }}">#{{ $appointment->id ?? 'N/A' }}</a>
-                                                        </td>
-                                                        <td>
-                                                            <h2 class="table-avatar">
-                                                                <a href="{{ url('doctor-profile') }}"
-                                                                    class="avatar avatar-sm me-2">
-                                                                    <img class="avatar-img rounded-3"
-                                                                        src="{{ $appointment->doctor->profile_image ?? URL::asset('/assets/img/doctors/doctor-thumb-02.jpg') }}"
-                                                                        alt="User Image">
-                                                                </a>
-                                                                <a
-                                                                    href="{{ url('doctor-profile') }}">{{ $appointment->doctor->name ?? 'N/A' }}</a>
-                                                            </h2>
-                                                        </td>
-                                                        <td>{{ \Carbon\Carbon::parse($appointment->start_date)->format('d M Y h:i A') }}
-                                                        </td>
-                                                        <td>{{ \Carbon\Carbon::parse($appointment->created_at)->format('d M Y h:i A') }}
-                                                        </td>
-                                                        <td>${{ $appointment->slot->appointment_fees ?? '0' }}</td>
-                                                        <td>
-                                                            @if (in_array($appointment->status, ['approved', 'accepted', 'upcoming']))
-                                                                <span
-                                                                    class="badge badge-yellow status-badge">Upcoming</span>
-                                                            @elseif($appointment->status == 'completed')
-                                                                <span
-                                                                    class="badge badge-green status-badge">Completed</span>
-                                                            @elseif(in_array($appointment->status, ['cancelled', 'rejected']))
-                                                                <span
-                                                                    class="badge badge-danger status-badge">Cancelled</span>
-                                                            @else
-                                                                <span
-                                                                    class="badge badge-secondary status-badge">Unknown</span>
-                                                            @endif
-                                                        </td>
+                                                @if (!empty($grouped) && $grouped->isNotEmpty())
+                                                    @foreach ($grouped as $date => $group)
+                                                        @if ($group)
+                                                        
+                                                            <tr>
+                                                                 <td  class="fw-bold text-primary bg-light">
+                                                                   {{ $patient->dose_spot_patient_id ?? '#' }}
+                                                                </td>
+                                                                 <td  class="fw-bold text-primary bg-light">
+                                                                   {{ $patient->name ?? 'Patient' }}
+                                                                </td>
+                                                                <td  class="fw-bold text-primary bg-light">
+                                                                    <a href="javascript:void(0);"
+                                                                        class="text-decoration-none view-prescription-date"
+                                                                        data-date="{{ $date }}"
+                                                                        data-items='@json($group)'>
+                                                                        {{ \Carbon\Carbon::parse($date)->format('F j, Y') }}
+                                                                    </a>
+                                                                </td>
+                                                                <td  class="fw-bold text-primary bg-light">
+                                                                   
+                                                                     <a href="javascript:void(0);" class="view-prescription view-prescription-date"
+                                                                       data-date="{{ $date }}"
+                                                                        data-items='@json($group)'>
+                                                                        <i class="fa-solid fa-link"></i>
+                                                                    </a>
+                                                                </td>
+                                                            </tr>
+                                                        @endif
+                                                    @endforeach
+                                                @endif
 
-                                                        <td>
-                                                            <div class="action-item">
-                                                                <a href="{{ url('patient-upcoming-appointment') }}">
-                                                                    <i class="fa-solid fa-link"></i>
-                                                                </a>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
+
                                             </tbody>
                                         </table>
                                     </div>
@@ -155,102 +137,6 @@
                                     <ul>
                                         <li>
                                             <a href="#" class="page-link"><i class="fa-solid fa-chevron-left"></i></a>
-                                        </li>
-                                        <li>
-                                            <a href="#" class="page-link active">1</a>
-                                        </li>
-                                        <li>
-                                            <a href="#" class="page-link ">2</a>
-                                        </li>
-                                        <li>
-                                            <a href="#" class="page-link">3</a>
-                                        </li>
-                                        <li>
-                                            <a href="#" class="page-link">4</a>
-                                        </li>
-                                        <li>
-                                            <a href="#" class="page-link">...</a>
-                                        </li>
-                                        <li>
-                                            <a href="#" class="page-link"><i
-                                                    class="fa-solid fa-chevron-right"></i></a>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <!-- /Pagination -->
-
-                            </div>
-                            <!-- /Appointment Tab -->
-
-                            <!-- Prescription Tab -->
-                            <div class="tab-pane fade" id="prescription">
-                                <div class="search-header">
-                                    <div class="search-field">
-                                        <input type="text" class="form-control" placeholder="Search">
-                                        <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
-                                    </div>
-                                    <div>
-                                        <a href="{{ route('add-prescription',$patient->id) }}" class="btn btn-primary prime-btn" 
-                                            data-bs-target="#add_prescription">Add New Prescription</a>
-                                    </div>
-                                </div>
-
-                                <div class="custom-table">
-                                    <div class="table-responsive">
-                                        <table class="table table-center mb-0">
-                                            <thead>
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>Prescriped By</th>
-                                                    {{-- <th>Type</th> --}}
-                                                    <th>Date</th>
-                                                    <th>Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @if (!empty($patient->prescriptions) && $patient->prescriptions->isNotEmpty())
-                                                @foreach ($patient->prescriptions as $prescription)
-                                                <tr>
-                                                    <td><a href="javascript:void(0);" class="text-blue-600"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#view_prescription">#Apt123</a></td>
-                                                    <td>
-                                                        <h2 class="table-avatar">
-                                                            <a href="{{ url('doctor-profile') }}"
-                                                                class="avatar avatar-sm me-2">
-                                                                <img class="avatar-img rounded-3"
-                                                                    src="{{ URL::asset('/assets/img/doctors/doctor-thumb-02.jpg') }}"
-                                                                    alt="User Image">
-                                                            </a>
-                                                            <a href="{{ url('doctor-profile-2',$prescription->doctor->id) }}">{{ $prescription->doctor->name ?? '' }}</a>
-                                                        </h2>
-                                                    </td>
-                                                    {{-- <td>Visit</td> --}}
-                                                    <td>{{ $prescription->date ?? '--' }}</td>
-                                                    <td>
-                                                        <div class="action-item">
-                                                            <a href="javascript:void(0);" data-bs-toggle="modal"
-                                                                data-bs-target="#view_prescription">
-                                                                <i class="fa-solid fa-link"></i>
-                                                            </a>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                @endforeach
-                                                @endif
-                                              
-                                                
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <!-- Pagination -->
-                                <div class="pagination dashboard-pagination">
-                                    <ul>
-                                        <li>
-                                            <a href="#" class="page-link"><i
-                                                    class="fa-solid fa-chevron-left"></i></a>
                                         </li>
                                         <li>
                                             <a href="#" class="page-link active">1</a>
@@ -629,4 +515,6 @@
 
     </div>
     <!-- /Page Content -->
+    @include('layout.partials.custom_scripts')
+
 @endsection

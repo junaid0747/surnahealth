@@ -29,6 +29,7 @@ class User extends Authenticatable
         'pincode',
         'city',
         'state',
+        'zipcode',
         'address',
         'years_of_experience',
         'profile_image',
@@ -43,6 +44,9 @@ class User extends Authenticatable
         'medical_licence',
         'referral_code',
         'term_and_condition',
+        'stripe_customer_id',
+        'subscription_active',
+        'dose_spot_patient_id'
     ];
 
     /**
@@ -68,6 +72,12 @@ class User extends Authenticatable
         ];
     }
 
+    public function isSubscribed()
+    {
+        // Assuming you have a 'subscription_active' column in your users table
+        return $this->subscription_active; // Returns true if subscribed, false otherwise
+    }
+
     public function setNameAttribute($value)
     {
         if (!empty($this->first_name) && !empty($this->last_name)) {
@@ -78,7 +88,7 @@ class User extends Authenticatable
             $this->attributes['name'] = $value;
         }
     }
-    
+
     public function getFirstNameAttribute()
     {
         $nameParts = explode(' ', $this->name);
@@ -98,7 +108,7 @@ class User extends Authenticatable
     public function doctorSpecialization()
     {
         return $this->belongsToMany(Specialization::class, 'doctor_specialization', 'user_id', 'specialization_id')
-                    ->withTimestamps(); // to include created_at and updated_at in the pivot table
+            ->withTimestamps(); // to include created_at and updated_at in the pivot table
     }
 
     public function specializations()
@@ -109,27 +119,27 @@ class User extends Authenticatable
     // A doctor can have many qualifications
     public function doctorEducation()
     {
-        return $this->hasMany(DoctorEducation::class,'doctor_id','id');
+        return $this->hasMany(DoctorEducation::class, 'doctor_id', 'id');
     }
 
     public function doctorClinic()
     {
-        return $this->hasMany(DoctorClinic::class,'doctor_id','id');
+        return $this->hasMany(DoctorClinic::class, 'doctor_id', 'id');
     }
 
     public function doctorAwards()
     {
-        return $this->hasMany(DoctorAward::class,'doctor_id','id');
+        return $this->hasMany(DoctorAward::class, 'doctor_id', 'id');
     }
 
     public function doctorExperiences()
     {
-        return $this->hasMany(DoctorExperience::class,'doctor_id','id');
+        return $this->hasMany(DoctorExperience::class, 'doctor_id', 'id');
     }
 
     public function doctorBusinessHour()
     {
-        return $this->hasMany(DoctorBusinessHour::class,'doctor_id','id');
+        return $this->hasMany(DoctorBusinessHour::class, 'doctor_id', 'id');
     }
 
     public function availableTimings()
@@ -144,22 +154,22 @@ class User extends Authenticatable
 
     // Patient side relations
     public function medicalDetails()
-{
-    return $this->hasOne(MedicalDetail::class);
-}
+    {
+        return $this->hasOne(MedicalDetail::class);
+    }
 
-public function appointments()
-{
-    return $this->hasMany(Appointment::class,'user_id','id');
-}
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class, 'user_id', 'id');
+    }
 
-public function prescriptions()
-{
-    return $this->hasMany(Prescription::class,'user_id','id');
-}
+    public function prescriptions()
+    {
+        return $this->hasMany(Prescription::class, 'user_id', 'id');
+    }
 
-public function patientAppointmentPreferences()
-{
-    return $this->hasOne(PatientAppoitmentPreferences::class,'user_id','id');
-}
+    public function patientAppointmentPreferences()
+    {
+        return $this->hasOne(PatientAppoitmentPreferences::class, 'user_id', 'id');
+    }
 }

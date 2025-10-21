@@ -10,7 +10,7 @@
                     <div class="account-content">
                         <div class="row align-items-center justify-content-center">
                             <div class="col-md-7 col-lg-6 login-left">
-                                <img src="{{ URL::asset('/assets/img/login-banner.png') }}" class="img-fluid"
+                                <img src="{{ URL::asset('/assets/img/choose-us-six.png') }}" class="img-fluid"
                                     alt="Login Banner">
                             </div>
                             <div class="col-md-12 col-lg-6 login-right">
@@ -20,9 +20,10 @@
                                 </div>
 
                                 <!-- Forgot Password Form -->
-                                <form action="{{ url('login') }}">
+                                <form action="{{ route('password.email') }}" method="post">
+                                    @csrf
                                     <div class="mb-3 form-focus">
-                                        <input type="email" class="form-control floating">
+                                        <input type="email" class="form-control floating" name="email">
                                         <label class="focus-label">Email</label>
                                     </div>
                                     <div class="text-end">

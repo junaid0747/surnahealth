@@ -21,7 +21,7 @@
                 <div class="col-lg-8 col-xl-9">
 
                     <div class="dashboard-header">
-                        <h3>Records</h3>
+                        <h3>{{ __('messages.records') }}</h3>
                         <div class="appointment-tabs">
                             <ul class="nav">
                                 {{-- <li>
@@ -30,7 +30,7 @@
                                 </li> --}}
                                 <li>
                                     <a href="#" class="nav-link active" data-bs-toggle="tab"
-                                        data-bs-target="#prescription">Prescriptions</a>
+                                        data-bs-target="#prescription">{{ __('messages.prescription') }}</a>
                                 </li>
                             </ul>
                         </div>
@@ -49,67 +49,56 @@
 
                             <div class="custom-table">
                                 <div class="table-responsive">
-                                    <table class="table table-center mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Name</th>
-                                                <th>Created Date</th>
-                                                <th>Prescriped By</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @if (!empty($prescriptions) && $prescriptions->isNotEmpty())
-                                                @foreach ($prescriptions as $prescription)
-                                                    <tr>
-                                                        <td><a class="text-blue-600" href="javascript:void(0);"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#view_prescription">#{{ $prescription->id ?? '' }}</a>
-                                                        </td>
-                                                        <td>
-                                                            <a href="javascript:void(0);" class="lab-icon prescription">
-                                                                <span><i
-                                                                        class="fa-solid fa-prescription"></i></span>Prescription
-                                                            </a>
-                                                        </td>
-                                                        <td>{{ $prescription->date ?? '' }}</td>
-                                                        <td>
-                                                            <h2 class="table-avatar">
-                                                                <a href="{{ url('doctor-profile-2', $prescription->doctor->id) }}"
-                                                                    class="avatar avatar-sm me-2">
-                                                                    <img class="avatar-img rounded-3"
-                                                                        src="{{ $prescription->doctor->profile_image ?? URL::asset('/assets/img/doctors/doctor-thumb-02.jpg') }}"
-                                                                        alt="User Image">
-                                                                </a>
-                                                                <a
-                                                                    href="{{ url('doctor-profile-2', $prescription->doctor->id) }}">{{ $prescription->doctor->name ?? '' }}</a>
-                                                            </h2>
-                                                        </td>
-                                                        <td>
-                                                            <div class="action-item">
-                                                                <a href="javascript:void(0);" data-bs-toggle="modal"
-                                                                    data-bs-target="#view_prescription">
-                                                                    <i class="fa-solid fa-link"></i>
-                                                                </a>
-                                                                <a href="javascript:void(0);">
-                                                                    <i class="fa-solid fa-download"></i>
-                                                                </a>
-                                                                <a href="javascript:void(0);">
-                                                                    <i class="fa-solid fa-trash-can"></i>
-                                                                </a>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            @endif
-                                        </tbody>
-                                    </table>
+                                   <table class="table table-center mb-0">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>{{ __('messages.patient_id') }}</th>
+                                                                    <th>{{ __('messages.created_date') }}</th>
+                                                                    <th>{{ __('messages.prescribed_by') }}</th>
+                                                                    <th>{{ __('messages.prescription_detail') }}</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @if (!empty($formatted) && $formatted->isNotEmpty())
+                                                                    @foreach ($formatted as $group)
+                                                                        <tr>
+                                                                            <td class="fw-bold text-primary bg-light">
+                                                                                {{ $patientId ?? '#' }}
+                                                                            </td>
+                                                                            <td class="fw-bold text-primary bg-light">
+                                                                                <a href="javascript:void(0);"
+                                                                                    class="text-decoration-none view-prescription-date"
+                                                                                    data-date="{{ $group['date'] }}"
+                                                                                    data-items='@json($group['items'])'>
+                                                                                    {{ \Carbon\Carbon::parse($group['date'])->format('F j, Y') }}
+                                                                                </a>
+                                                                            </td>
+                                                                            <td class="fw-bold text-primary bg-light">
+                                                                                {{ $group['doctor_name'] ?? 'Not Linked' }}
+                                                                            </td>
+                                                                            <td class="fw-bold text-primary bg-light">
+                                                                                <a href="javascript:void(0);"
+                                                                                    class="view-prescription view-prescription-date"
+                                                                                    data-date="{{ $group['date'] }}"
+                                                                                    data-items='@json($group['items'])'>
+                                                                                    <i class="fa-solid fa-link"></i>
+                                                                                </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                    @endforeach
+                                                                @else
+                                                                    <tr>
+                                                                        <td colspan="5" class="text-center">No
+                                                                            prescriptions found.</td>
+                                                                    </tr>
+                                                                @endif
+                                                            </tbody>
+                                                        </table>
                                 </div>
                             </div>
 
                             <div class="pagination dashboard-pagination">
-                                {{ $prescriptions->links('vendor.pagination.custom') }}
+                                {{-- {{ $prescriptions->links('vendor.pagination.custom') }} --}}
                             </div>
                         </div>
                     </div>
@@ -152,6 +141,6 @@
             });
         });
     </script>
-
+@include('layout.partials.custom_scripts')
     <!-- /Page Content -->
 @endsection
